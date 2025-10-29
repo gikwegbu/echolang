@@ -45,5 +45,9 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>EchoLang would like to access your microphone</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>EchoLang would like to access your speech system</string>
 </dict>
 </plist>
