@@ -24,12 +24,13 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  whisper_ggml: ^1.3.0
   cupertino_icons: ^1.0.8
+  
+  whisper_ggml: ^1.3.0
   record: ^6.1.2
   path_provider: ^2.1.5
   permission_handler: ^12.0.1
-  sherpa_onnx: ^1.12.15
+  onnxruntime: ^1.4.1
 
 dev_dependencies:
   flutter_test:
@@ -42,6 +43,8 @@ flutter:
 
   assets:
     - assets/jfk.wav
+    - assets/models/
+    - assets/igbo_audio/
 
   # fonts:
   #   - family: Schyler

@@ -1,3 +1,5 @@
+/*
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -5,9 +7,9 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:path_provider/path_provider.dart';
-// import 'package:permission_handler/permission_handler.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:record/record.dart';
-import 'package:onnxruntime/onnxruntime.dart';
+
 import 'package:whisper_ggml/whisper_ggml.dart';
 
 void main() {
@@ -42,17 +44,12 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final assetFileName = 'assets/models/test.onnx';
-  final whisperBinFile = 'assets/models/whisper_igbo_ggml.bin';
-
   final model = WhisperModel.base;
-  final onnxSessionOptions = OrtSessionOptions();
-  OrtSession? ortSession;
   final AudioRecorder audioRecorder = AudioRecorder();
   final WhisperController whisperController = WhisperController();
   String transcribedText = 'Transcribed text will be displayed here';
-  String englishText = '---';
-
+  String englishText = '';
+  
   bool isProcessing = false;
   bool isProcessingFile = false;
   bool isListening = false;
@@ -60,11 +57,8 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     initModel();
-    // _loadOnnxSession();
     super.initState();
   }
-
-  // 240143233: Ikwegbu George Chinedu
 
   @override
   Widget build(BuildContext context) {
@@ -99,8 +93,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    // transcribedText,
-                    englishText,
+                    transcribedText,
                     style: Theme.of(context).textTheme.displayMedium,
                     textAlign: TextAlign.center,
                   ),
@@ -168,30 +161,18 @@ class _MyHomePageState extends State<MyHomePage> {
     try {
       /// Try initializing the model from assets
       // final bytesBase = await rootBundle.load('assets/ggml-${model.modelName}.bin'); // You haven't downloaded this and added to assets yet, hence the error
-      final bytesBase = await rootBundle.load(whisperBinFile);
+      final bytesBase =
+          await rootBundle.load('assets/models/whisper_igbo_ggml.bin');
       final modelPathBase = await whisperController.getPath(model);
       final fileBase = File(modelPathBase);
       await fileBase.writeAsBytes(bytesBase.buffer
           .asUint8List(bytesBase.offsetInBytes, bytesBase.lengthInBytes));
     } catch (e) {
       debugPrint(
-        "George this is the error from loading whisper model...${e.toString()}",
-      );
+          "George this is the error from loading model...${e.toString()}");
 
       /// On error try downloading the model
       await whisperController.downloadModel(model);
-    }
-  }
-
-  _loadOnnxSession() async {
-    try {
-      final rawAssetFile = await rootBundle.load(assetFileName);
-      final bytes = rawAssetFile.buffer.asUint8List();
-      final session = OrtSession.fromBuffer(bytes, onnxSessionOptions);
-    } catch (e) {
-      debugPrint(
-        "George this is the error from loading onnx...${e.toString()}",
-      );
     }
   }
 
@@ -251,8 +232,9 @@ class _MyHomePageState extends State<MyHomePage> {
       asset.buffer.asUint8List(),
     );
 
-    _updateIsProcessing(true);
-    _updateTranscribedText();
+    setState(() {
+      isProcessingFile = true;
+    });
 
     final result = await whisperController.transcribe(
       model: model,
@@ -260,69 +242,19 @@ class _MyHomePageState extends State<MyHomePage> {
       // lang: 'auto',
       lang: 'en',
     );
-    _updateIsProcessing(false);
+
+    setState(() {
+      isProcessingFile = false;
+    });
 
     if (result?.transcription.text != null) {
-      _updateTranscribedText(text: result!.transcription.text);
-      // _runIgEnTranslation(result.transcription.text);
+      setState(() {
+        transcribedText = result!.transcription.text;
+      });
     }
   }
 
-  _updateTranscribedText({String? text}) {
-    setState(() {
-      transcribedText = text ?? 'processing...';
-    });
-  }
-
-  _updateIsProcessing(bool val) {
-    setState(() {
-      isProcessingFile = val;
-    });
-  }
-
-/*
-  Future<void> _runIgEnTranslation(String sourceIgbo) async {
-    if (ortSession == null) return;
-
-    setState(() {
-      englishText = 'Translating...';
-    });
-
-    // NOTE:
-    // Running Marian/Opus models via ONNX requires tokenization & detokenization.
-    // For brevity this demo uses a naive approach: send raw text as input nodes
-    // to a small exported ONNX model that expects 'input_ids' already tokenized.
-    // In practice you MUST export a model that accepts raw string or implement
-    // SentencePiece tokenization in Dart (or bundle the tokenizers via native).
-
-    // For a working pipeline: preprocess text using sentencepiece (python) and
-    // save vocabulary IDs, OR export a model with a preprocessing step baked-in.
-
-    // For demo, we'll call a helper isolate that runs a small python microservice
-    // — but the user asked for purely local Flutter; so in the README we provide
-    // instructions to export an ONNX model that embeds sentencepiece so the app
-    // can pass a raw string. If you exported such a model, the following shows
-    // how to run it using onnxruntime.
-
-    // Example (pseudo):
-    final inputName = ortSession!.inputNames.first;
-    final inputTensor = OrtValueTensor.createTensorWithDataString([sourceIgbo]);
-    final inputs = {inputName: inputTensor};
-    final outputs = await ortSession!.runAsync(OrtRunOptions(), inputs);
-
-    // Get the model's text output (depends on how you exported the model)
-    final out0 = outputs.first;
-    final bytes = out0.toUtf8String();
-
-    setState(() {
-      englishText = bytes;
-    });
-
-    // release ort objects
-    inputTensor.release();
-    outputs.forEach((e) => e.release());
-  }
-  */
+  
 }
 
 
@@ -521,4 +453,5 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
+*/
 */
