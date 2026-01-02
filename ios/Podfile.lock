@@ -55,7 +55,7 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   ffmpeg_kit_flutter_new: 1be4ac1d0c080cd1d9a08c1b19ddadccd9f378e8
-  Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
+  Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
   onnxruntime: e9346181d75b8dea8733bdae512a22c298962e00
   onnxruntime-c: ebdcfd8650bcbd10121c125262f99dea681b92a3
   onnxruntime-objc: ae7acec7a3d03eaf072d340afed7a35635c1c2a6
@@ -64,6 +64,6 @@ SPEC CHECKSUMS:
   record_ios: 840d21cce013c5a3b2168b74a54ebdb4136359e2
   whisper_ggml: 0674f02c574459739082b96638918b344f02109d
 
-PODFILE CHECKSUM: a05aaf5ef2f86f2be7d799a7a7733af4b142d9c6
+PODFILE CHECKSUM: 6c90cc76583c4f369e365935efe144af4d70cce3
 
-COCOAPODS: 1.15.2
+COCOAPODS: 1.16.2
