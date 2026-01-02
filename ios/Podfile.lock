@@ -1,8 +1,8 @@
 PODS:
-  - ffmpeg_kit_flutter_new (1.0.0):
-    - ffmpeg_kit_flutter_new/full-gpl-lts (= 1.0.0)
+  - ffmpeg_kit_flutter_new_min (7.1.1):
+    - ffmpeg_kit_flutter_new_min/min (= 7.1.1)
     - Flutter
-  - ffmpeg_kit_flutter_new/full-gpl-lts (1.0.0):
+  - ffmpeg_kit_flutter_new_min/min (7.1.1):
     - Flutter
   - Flutter (1.0.0)
   - onnxruntime (0.0.1):
@@ -24,7 +24,7 @@ PODS:
     - Flutter
 
 DEPENDENCIES:
-  - ffmpeg_kit_flutter_new (from `.symlinks/plugins/ffmpeg_kit_flutter_new/ios`)
+  - ffmpeg_kit_flutter_new_min (from `.symlinks/plugins/ffmpeg_kit_flutter_new_min/ios`)
   - Flutter (from `Flutter`)
   - onnxruntime (from `.symlinks/plugins/onnxruntime/ios`)
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
@@ -38,8 +38,8 @@ SPEC REPOS:
     - onnxruntime-objc
 
 EXTERNAL SOURCES:
-  ffmpeg_kit_flutter_new:
-    :path: ".symlinks/plugins/ffmpeg_kit_flutter_new/ios"
+  ffmpeg_kit_flutter_new_min:
+    :path: ".symlinks/plugins/ffmpeg_kit_flutter_new_min/ios"
   Flutter:
     :path: Flutter
   onnxruntime:
@@ -54,7 +54,7 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/whisper_ggml/ios"
 
 SPEC CHECKSUMS:
-  ffmpeg_kit_flutter_new: 1be4ac1d0c080cd1d9a08c1b19ddadccd9f378e8
+  ffmpeg_kit_flutter_new_min: f28813df6012a3b3c0e66e4e9f3583a9b30be4d6
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
   onnxruntime: e9346181d75b8dea8733bdae512a22c298962e00
   onnxruntime-c: ebdcfd8650bcbd10121c125262f99dea681b92a3
