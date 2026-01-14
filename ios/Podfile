@@ -48,6 +48,7 @@ post_install do |installer|
           ## dart: PermissionGroup.speech
           'PERMISSION_SPEECH_RECOGNIZER=1',
         ]
+      
     end
   end
 end

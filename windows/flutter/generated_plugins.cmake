@@ -8,7 +8,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
 )
 
 list(APPEND FLUTTER_FFI_PLUGIN_LIST
-  sherpa_onnx_windows
+  onnxruntime
   whisper_ggml
 )
 
