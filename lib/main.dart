@@ -279,7 +279,6 @@ class _MyHomePageState extends State<MyHomePage> {
       isProcessingFile = val;
     });
   }
-
 /*
   Future<void> _runIgEnTranslation(String sourceIgbo) async {
     if (ortSession == null) return;

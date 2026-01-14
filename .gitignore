@@ -46,3 +46,6 @@ app.*.map.json
 
 # Ignoring the ggml file
 whisper_igbo_ggml.bin
+
+# Ignoring the ONNX DATA model files
+opus-mt-ig-en.onnx.data
