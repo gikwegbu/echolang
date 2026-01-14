@@ -49,8 +49,6 @@ post_install do |installer|
           'PERMISSION_SPEECH_RECOGNIZER=1',
         ]
       
-      # Fix for ffmpeg_kit framework simulator architecture issue
-      config.build_settings["EXCLUDED_ARCHS[sdk=iphonesimulator*]"] = "arm64"
     end
   end
 end
