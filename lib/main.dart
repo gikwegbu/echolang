@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:onnx_translation/onnx_translation.dart';
 
 import 'dart:async';
 import 'dart:io';
@@ -47,6 +48,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   final model = WhisperModel.base;
   final onnxSessionOptions = OrtSessionOptions();
+  final onnxModel = OnnxModel();
   OrtSession? ortSession;
   final AudioRecorder audioRecorder = AudioRecorder();
   final WhisperController whisperController = WhisperController();
@@ -56,12 +58,30 @@ class _MyHomePageState extends State<MyHomePage> {
   bool isProcessing = false;
   bool isProcessingFile = false;
   bool isListening = false;
+  bool isTranslating = false;
 
   @override
   void initState() {
     initModel();
     // _loadOnnxSession();
     super.initState();
+    _initOnnxModel();
+  }
+
+  _initOnnxModel() async {
+    /*
+    // final model = OnnxModel();
+    await onnxModel.init(modelBasePath: 'assets/models/onnx_model_ig_en');
+    // final output = await model.runModel("Hello world", initialLangToken: '>>ara<<');
+    final output = await model.runModel(
+      "Ndeewo, kedu ka ị mere?",
+      // initialLangToken: "ig",
+      initialLangToken: "en",
+    );
+    // Releases all ONNX resources used by this instance, After calling this method, the model instance should not be used
+    // model.release(); 
+    */
+    await onnxModel.init(modelBasePath: 'assets/models/onnx_model_ig_en');
   }
 
   // 240143233: Ikwegbu George Chinedu
@@ -98,12 +118,18 @@ class _MyHomePageState extends State<MyHomePage> {
                     style: Theme.of(context).textTheme.headlineSmall,
                   ),
                   const SizedBox(height: 10),
-                  Text(
-                    // transcribedText,
-                    englishText,
-                    style: Theme.of(context).textTheme.displayMedium,
-                    textAlign: TextAlign.center,
-                  ),
+                  isTranslating
+                      ? const SizedBox(
+                          width: 50,
+                          height: 50,
+                          child: CircularProgressIndicator(),
+                        )
+                      : Text(
+                          // transcribedText,
+                          englishText,
+                          style: Theme.of(context).textTheme.displayMedium,
+                          textAlign: TextAlign.center,
+                        ),
                 ],
               ),
               Positioned(
@@ -167,7 +193,6 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<void> initModel() async {
     try {
       /// Try initializing the model from assets
-      // final bytesBase = await rootBundle.load('assets/ggml-${model.modelName}.bin'); // You haven't downloaded this and added to assets yet, hence the error
       final bytesBase = await rootBundle.load(whisperBinFile);
       final modelPathBase = await whisperController.getPath(model);
       final fileBase = File(modelPathBase);
@@ -203,10 +228,21 @@ class _MyHomePageState extends State<MyHomePage> {
         if (audioPath != null) {
           debugPrint('🔴🔴🎙️ Stopped listening.');
 
+          _updateTranscribedText(text: 'listening...');
           setState(() {
             isListening = false;
             isProcessing = true;
           });
+          print("George this is the Audio path: $audioPath");
+          // Trial
+          final srcFile = File(audioPath);
+
+          // Destination in shared storage
+          final dstFile = File('/storage/emulated/0/Download/test.m4a');
+
+          // Copy the file
+          await srcFile.copy(dstFile.path);
+          print('George the File was copied to ${dstFile.path}');
 
           final result = await whisperController.transcribe(
             model: model,
@@ -222,9 +258,8 @@ class _MyHomePageState extends State<MyHomePage> {
           }
 
           if (result?.transcription.text != null) {
-            setState(() {
-              transcribedText = result!.transcription.text;
-            });
+            _updateTranscribedText(text: result!.transcription.text);
+            // _runIgEnTranslation(result.transcription.text);
           }
         } else {
           debugPrint('No recording exists.');
@@ -238,6 +273,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
         final Directory appDirectory = await getTemporaryDirectory();
         await audioRecorder.start(const RecordConfig(),
+            // path: '${appDirectory.path}/test.m4a');
             path: '${appDirectory.path}/test.m4a');
       }
     }
@@ -279,245 +315,22 @@ class _MyHomePageState extends State<MyHomePage> {
       isProcessingFile = val;
     });
   }
-/*
+
+  _updateIsTranslating(bool val) {
+    setState(() {
+      isTranslating = val;
+    });
+  }
+
   Future<void> _runIgEnTranslation(String sourceIgbo) async {
-    if (ortSession == null) return;
-
+    print("Running Igbo to English translation...");
+    _updateIsTranslating(true);
+    print("Source Igbo: $sourceIgbo");
+    await Future.delayed(const Duration(milliseconds: 500));
+    final output = await onnxModel.runModel(sourceIgbo, initialLangToken: "en");
     setState(() {
-      englishText = 'Translating...';
+      englishText = output;
     });
-
-    // NOTE:
-    // Running Marian/Opus models via ONNX requires tokenization & detokenization.
-    // For brevity this demo uses a naive approach: send raw text as input nodes
-    // to a small exported ONNX model that expects 'input_ids' already tokenized.
-    // In practice you MUST export a model that accepts raw string or implement
-    // SentencePiece tokenization in Dart (or bundle the tokenizers via native).
-
-    // For a working pipeline: preprocess text using sentencepiece (python) and
-    // save vocabulary IDs, OR export a model with a preprocessing step baked-in.
-
-    // For demo, we'll call a helper isolate that runs a small python microservice
-    // — but the user asked for purely local Flutter; so in the README we provide
-    // instructions to export an ONNX model that embeds sentencepiece so the app
-    // can pass a raw string. If you exported such a model, the following shows
-    // how to run it using onnxruntime.
-
-    // Example (pseudo):
-    final inputName = ortSession!.inputNames.first;
-    final inputTensor = OrtValueTensor.createTensorWithDataString([sourceIgbo]);
-    final inputs = {inputName: inputTensor};
-    final outputs = await ortSession!.runAsync(OrtRunOptions(), inputs);
-
-    // Get the model's text output (depends on how you exported the model)
-    final out0 = outputs.first;
-    final bytes = out0.toUtf8String();
-
-    setState(() {
-      englishText = bytes;
-    });
-
-    // release ort objects
-    inputTensor.release();
-    outputs.forEach((e) => e.release());
-  }
-  */
-}
-
-
-/*
-
-import 'dart:async';
-import 'dart:io';
-import 'dart:isolate';
-import 'dart:typed_data';
-
-import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:record/record.dart';
-
-import 'package:whisper_ggml/whisper_ggml.dart';
-import 'package:onnxruntime/onnxruntime.dart';
-
-void main() {
-  runApp(MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Igbo Offline STT + MT',
-      home: HomePage(),
-    );
+    _updateIsTranslating(false);
   }
 }
-
-class HomePage extends StatefulWidget {
-  @override
-  _HomePageState createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage> {
-  final recorder = Record();
-  WhisperGgml? whisper;
-  OrtSession? ortSession;
-  String igboText = '';
-  String englishText = '';
-  bool isRecording = false;
-  bool modelsLoaded = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _initModels();
-  }
-
-  Future<void> _initModels() async {
-    // Load Whisper ggml model from assets
-    final appDir = await getApplicationDocumentsDirectory();
-    final modelsDir = Directory('${appDir.path}/models');
-    if (!modelsDir.existsSync()) modelsDir.createSync(recursive: true);
-
-    // Copy assets to documents (Flutter assets are read-only inside bundle)
-    await _copyAssetIfAbsent('assets/models/whisper_igbo_ggml.bin',
-        '${modelsDir.path}/whisper_igbo_ggml.bin');
-    await _copyAssetIfAbsent('assets/models/opus_mt_ig_en.onnx',
-        '${modelsDir.path}/opus_mt_ig_en.onnx');
-
-    // Initialize whisper_ggml
-    whisper = await WhisperGgml.create(modelPath: '${modelsDir.path}/whisper_igbo_ggml.bin');
-
-    // Initialize ONNX runtime session for opus-mt-ig-en
-    OrtEnv env = OrtEnv.instance;
-    ortSession = await OrtSession.createFromPath('${modelsDir.path}/opus_mt_ig_en.onnx');
-
-    setState(() {
-      modelsLoaded = true;
-    });
-  }
-
-  Future<void> _copyAssetIfAbsent(String assetPath, String destPath) async {
-    final destFile = File(destPath);
-    if (destFile.existsSync()) return;
-    final data = await rootBundle.load(assetPath);
-    final bytes = data.buffer.asUint8List();
-    await destFile.writeAsBytes(bytes);
-  }
-
-  Future<void> _startOrStopRecording() async {
-    if (!isRecording) {
-      final status = await Permission.microphone.request();
-      if (!status.isGranted) return;
-
-      final dir = await getTemporaryDirectory();
-      final path = '${dir.path}/recorded.wav';
-      await recorder.start(path: path, encoder: AudioEncoder.wav, bitRate: 128000, samplingRate: 16000);
-      setState(() => isRecording = true);
-    } else {
-      final path = await recorder.stop();
-      setState(() => isRecording = false);
-      if (path != null) {
-        await _runTranscription(path);
-      }
-    }
-  }
-
-  Future<void> _runTranscription(String audioPath) async {
-    setState(() {
-      igboText = 'Transcribing...';
-      englishText = '';
-    });
-
-    if (whisper == null) return;
-
-    // whisper_ggml exposes a simple API to transcribe the wav file
-    final result = await whisper!.transcribe(audioPath);
-    setState(() {
-      igboText = result.text ?? '';
-    });
-
-    // run translation on the result
-    await _runTranslation(igboText);
-  }
-
-  Future<void> _runTranslation(String sourceIgbo) async {
-    if (ortSession == null) return;
-
-    setState(() {
-      englishText = 'Translating...';
-    });
-
-    // NOTE:
-    // Running Marian/Opus models via ONNX requires tokenization & detokenization.
-    // For brevity this demo uses a naive approach: send raw text as input nodes
-    // to a small exported ONNX model that expects 'input_ids' already tokenized.
-    // In practice you MUST export a model that accepts raw string or implement
-    // SentencePiece tokenization in Dart (or bundle the tokenizers via native).
-
-    // For a working pipeline: preprocess text using sentencepiece (python) and
-    // save vocabulary IDs, OR export a model with a preprocessing step baked-in.
-
-    // For demo, we'll call a helper isolate that runs a small python microservice
-    // — but the user asked for purely local Flutter; so in the README we provide
-    // instructions to export an ONNX model that embeds sentencepiece so the app
-    // can pass a raw string. If you exported such a model, the following shows
-    // how to run it using onnxruntime.
-
-    // Example (pseudo):
-    final inputName = ortSession!.inputNames.first;
-    final inputTensor = OrtValueTensor.createTensorWithDataString([sourceIgbo]);
-    final inputs = {inputName: inputTensor};
-    final outputs = await ortSession!.runAsync(OrtRunOptions(), inputs);
-
-    // Get the model's text output (depends on how you exported the model)
-    final out0 = outputs.first;
-    final bytes = out0.toUtf8String();
-
-    setState(() {
-      englishText = bytes;
-    });
-
-    // release ort objects
-    inputTensor.release();
-    outputs.forEach((e) => e.release());
-  }
-
-  @override
-  void dispose() {
-    whisper?.dispose();
-    ortSession?.release();
-    recorder.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Igbo Offline STT → EN')),
-      body: Padding(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            ElevatedButton(
-              onPressed: modelsLoaded ? _startOrStopRecording : null,
-              child: Text(isRecording ? 'Stop Recording' : 'Start Recording'),
-            ),
-            SizedBox(height: 12),
-            Text('Igbo transcription:', style: TextStyle(fontWeight: FontWeight.bold)),
-            SizedBox(height: 8),
-            SelectableText(igboText),
-            SizedBox(height: 12),
-            Text('English translation:', style: TextStyle(fontWeight: FontWeight.bold)),
-            SizedBox(height: 8),
-            SelectableText(englishText),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-*/

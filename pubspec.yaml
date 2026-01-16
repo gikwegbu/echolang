@@ -31,7 +31,9 @@ dependencies:
   path_provider: ^2.1.5
   permission_handler: ^12.0.1
   onnxruntime: ^1.4.1
-  http: ^1.6.0
+  # sentencepiece_ffi: ^0.1.3
+  onnx_translation: ^0.1.2
+  ffi: ^2.1.5
 
 dev_dependencies:
   flutter_test:
@@ -44,9 +46,16 @@ flutter:
 
   assets:
     - assets/jfk.wav
-    - assets/models/
     - assets/igbo_audio/
 
+    - assets/models/
+    - assets/models/onnx_model_ig_en/
+
+    - assets/models/onnx_model_ig_en/encoder_model.onnx
+    - assets/models/onnx_model_ig_en/decoder_model.onnx
+    - assets/models/onnx_model_ig_en/vocab.json
+    - assets/models/onnx_model_ig_en/tokenizer_config.json
+    - assets/models/onnx_model_ig_en/generation_config.json
   # fonts:
   #   - family: Schyler
   #     fonts:

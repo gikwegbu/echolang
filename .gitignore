@@ -49,3 +49,6 @@ whisper_igbo_ggml.bin
 
 # Ignoring the ONNX DATA model files
 opus-mt-ig-en.onnx.data
+
+# Ignoring all the onnx data
+*.onnx
