@@ -73,13 +73,11 @@ class _MyHomePageState extends State<MyHomePage> {
     // final model = OnnxModel();
     await onnxModel.init(modelBasePath: 'assets/models/onnx_model_ig_en');
     // final output = await model.runModel("Hello world", initialLangToken: '>>ara<<');
-    final output = await model.runModel(
+    final output = await onnxModel.runModel(
       "Ndeewo, kedu ka ị mere?",
       // initialLangToken: "ig",
       initialLangToken: "en",
     );
-    // Releases all ONNX resources used by this instance, After calling this method, the model instance should not be used
-    // model.release(); 
     */
     await onnxModel.init(modelBasePath: 'assets/models/onnx_model_ig_en');
   }
