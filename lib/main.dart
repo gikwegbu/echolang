@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:onnx_translation/onnx_translation.dart';
 
 import 'dart:async';
@@ -28,7 +29,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(title: 'Igbo → English Translator'),
     );
   }
 }
@@ -45,6 +46,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   final assetFileName = 'assets/models/test.onnx';
   final whisperBinFile = 'assets/models/whisper_igbo_ggml.bin';
+  final player = AudioPlayer();
 
   final model = WhisperModel.base;
   final onnxSessionOptions = OrtSessionOptions();
@@ -226,7 +228,7 @@ class _MyHomePageState extends State<MyHomePage> {
         if (audioPath != null) {
           debugPrint('🔴🔴🎙️ Stopped listening.');
 
-          _updateTranscribedText(text: 'listening...');
+          _updateTranscribedText(text: 'processing...');
           setState(() {
             isListening = false;
             isProcessing = true;
@@ -239,9 +241,10 @@ class _MyHomePageState extends State<MyHomePage> {
           final dstFile = File('/storage/emulated/0/Download/test.m4a');
 
           // Copy the file
-          await srcFile.copy(dstFile.path);
+          // await srcFile.copy(dstFile.path); // --- This was used to copy the file to a visible permission-less directory in the Emulator ---
           print('George the File was copied to ${dstFile.path}');
 
+          await playAndTranslate(File(audioPath));
           final result = await whisperController.transcribe(
             model: model,
             audioPath: audioPath,
@@ -273,6 +276,7 @@ class _MyHomePageState extends State<MyHomePage> {
         await audioRecorder.start(const RecordConfig(),
             // path: '${appDirectory.path}/test.m4a');
             path: '${appDirectory.path}/test.m4a');
+        _updateTranscribedText(text: 'listening...');
       }
     }
   }
@@ -287,7 +291,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     _updateIsProcessing(true);
     _updateTranscribedText();
-
+    await playAndTranslate(convertedFile);
     final result = await whisperController.transcribe(
       model: model,
       audioPath: convertedFile.path,
@@ -318,6 +322,12 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       isTranslating = val;
     });
+  }
+
+  Future<void> playAndTranslate(File audioFile) async {
+    // Play audio
+    await player.setFilePath(audioFile.path);
+    await player.play();
   }
 
   Future<void> _runIgEnTranslation(String sourceIgbo) async {
