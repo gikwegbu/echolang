@@ -7,7 +7,6 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:path_provider/path_provider.dart';
-// import 'package:permission_handler/permission_handler.dart';
 import 'package:record/record.dart';
 import 'package:onnxruntime/onnxruntime.dart';
 import 'package:whisper_ggml/whisper_ggml.dart';
@@ -34,6 +33,8 @@ class MyApp extends StatelessWidget {
   }
 }
 
+
+
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
 
@@ -44,7 +45,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final assetFileName = 'assets/models/test.onnx';
   final whisperBinFile = 'assets/models/whisper_igbo_ggml.bin';
   final player = AudioPlayer();
 
@@ -65,7 +65,6 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     initModel();
-    // _loadOnnxSession();
     super.initState();
     _initOnnxModel();
   }
@@ -208,18 +207,6 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  _loadOnnxSession() async {
-    try {
-      final rawAssetFile = await rootBundle.load(assetFileName);
-      final bytes = rawAssetFile.buffer.asUint8List();
-      final session = OrtSession.fromBuffer(bytes, onnxSessionOptions);
-    } catch (e) {
-      debugPrint(
-        "George this is the error from loading onnx...${e.toString()}",
-      );
-    }
-  }
-
   Future<void> record() async {
     if (await audioRecorder.hasPermission()) {
       if (await audioRecorder.isRecording()) {
@@ -235,16 +222,16 @@ class _MyHomePageState extends State<MyHomePage> {
           });
           print("George this is the Audio path: $audioPath");
           // Trial
-          final srcFile = File(audioPath);
+          // final srcFile = File(audioPath);
 
           // Destination in shared storage
-          final dstFile = File('/storage/emulated/0/Download/test.m4a');
+          // final dstFile = File('/storage/emulated/0/Download/test.m4a');
 
           // Copy the file
           // await srcFile.copy(dstFile.path); // --- This was used to copy the file to a visible permission-less directory in the Emulator ---
-          print('George the File was copied to ${dstFile.path}');
+          // print('George the File was copied to ${dstFile.path}');
 
-          await playAndTranslate(File(audioPath));
+          await playAudioFile(File(audioPath));
           final result = await whisperController.transcribe(
             model: model,
             audioPath: audioPath,
@@ -291,7 +278,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     _updateIsProcessing(true);
     _updateTranscribedText();
-    await playAndTranslate(convertedFile);
+    await playAudioFile(convertedFile);
     final result = await whisperController.transcribe(
       model: model,
       audioPath: convertedFile.path,
@@ -324,7 +311,7 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  Future<void> playAndTranslate(File audioFile) async {
+  Future<void> playAudioFile(File audioFile) async {
     // Play audio
     await player.setFilePath(audioFile.path);
     await player.play();
